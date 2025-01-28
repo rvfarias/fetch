@@ -2,10 +2,10 @@ import os
 import glob
 from pathlib import Path
 #lista de objetos da classe arquivos 
-list_arq = []
+# list_arq = []
 
 # Defina o caminho para a pasta onde os arquivos estão localizados
-pasta = Path("~/Documentos/fetch")
+pasta = Path("/home/rafael-farias/Documentos/fetch")
 
 # # Define o caminho da pasta raiz
 # pasta_raiz = Path("/caminho/para/pasta")
@@ -24,12 +24,12 @@ for arquivo in pasta.rglob("*values.yaml"):
                 if indice > -1:
                     indice = linha.find(':')
                     str = linha[1:indice+1] + " 0"
-                    print(str)
+                    print(linha)
                     linha = str 
                 else:
                     indice = linha.find(':')
                     str = linha[0:indice+1] + " 0"
-                    print(str)
+                    print(linha)
                     linha = str
 
                 linhas[i] = linha
