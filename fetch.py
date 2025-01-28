@@ -35,12 +35,12 @@ for arquivo in arquivos:
                     indice = linha.find('#')
                     if indice > -1:
                         indice = linha.find(':')
-                        str = linha[1:indice] + " 0"
+                        str = linha[1:indice+1] + " 0"
                         print(str)
                         linha = str 
                     else:
                         indice = linha.find(':')
-                        str = linha[0:indice] + " 0"
+                        str = linha[0:indice+1] + " 0"
                         print(str)
                         linha = str
 
