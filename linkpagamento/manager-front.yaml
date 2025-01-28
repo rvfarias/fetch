@@ -10,7 +10,8 @@ spec:
     path: helm-charts/autorizacao/linkpagamento/link-manager-front
     targetRevision: hml
   destination:
-    server:    namespace: linkpagamento-hml
+    server: 'https://CA39D4383334BE87B1732E23111FF190.gr7.us-east-1.eks.amazonaws.com'
+    namespace: linkpagamento-hml
   syncPolicy:
     automated:
         prune: true
