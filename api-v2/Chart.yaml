@@ -1,0 +1,9 @@
+apiVersion: v2
+
+# Substituia teste pelo nome do emissor
+name: cards-api-v2
+description: A Helm chart for Web cardsapi generic 1
+
+type: application
+version: v1.0
+appVersion: v1.0
