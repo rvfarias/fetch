@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ .Values.applicationName }}
+  labels:
+    app:  {{ .Values.applicationName }}
+  namespace:  {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app:  {{ .Values.applicationName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.applicationName }}
+    spec:
+      serviceAccountName: {{ .Values.applicationName }}-sa
+      nodeSelector:
+        {{- range $key, $val := .Values.nodeSelector }}
+        {{ $key | quote | indent 6 }}: {{ $val | quote }}
+        {{- end }}
+      {{- if .Values.initContainers.enabled }}
+      initContainers:
+      {{- with .Values.initContainers.config }}
+        {{- . | toYaml | trim | nindent 6 }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        name: {{ .Values.applicationName }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+      {{- if .Values.configmaps.enabled }}
+        envFrom:
+          - configMapRef:
+              name: {{ .Values.applicationName }}-envs
+      {{- end }}
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+      {{- if .Values.healthCheck.readiness.enabled }}
+        readinessProbe:
+        {{- if .Values.healthCheck.readiness.httpGet.enabled }}
+          httpGet:
+            path: {{ .Values.healthCheck.readiness.httpGet.path }}
+            port: {{ .Values.service.port }}
+            scheme: HTTP
+        {{- end }}
+        {{- if .Values.healthCheck.readiness.tcpSocket.enabled }}
+          tcpSocket:
+            port: {{ .Values.service.port }}
+        {{- end }}
+          initialDelaySeconds: {{ .Values.healthCheck.readiness.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.readiness.timeoutSeconds }}
+          periodSeconds: {{ .Values.healthCheck.readiness.periodSeconds }}
+          failureThreshold: 3
+          successThreshold: 1
+      {{- end }}
+      {{- if .Values.healthCheck.liveness.enabled }}
+        livenessProbe:
+        {{- if .Values.healthCheck.liveness.httpGet.enabled }}
+          httpGet:
+            path: {{ .Values.healthCheck.liveness.httpGet.path }}
+            port: {{ .Values.service.port }}
+            scheme: HTTP
+        {{- end }}
+        {{- if .Values.healthCheck.liveness.tcpSocket.enabled }}
+          tcpSocket:
+            port: {{ .Values.service.port }}
+        {{- end }}
+          initialDelaySeconds: {{ .Values.healthCheck.liveness.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.liveness.timeoutSeconds }}
+          periodSeconds: {{ .Values.healthCheck.liveness.periodSeconds }}
+          failureThreshold: 3
+          successThreshold: 1
+      {{- end }}
+      {{- if .Values.persistence.enabled }}
+        volumeMounts:
+          {{- with .Values.persistence.mounts }}
+          {{- . | toYaml | trim | nindent 9 }}
+          {{- end }}
+      {{- end }}
+        ports:
+          - name: http
+            containerPort: {{ .Values.service.port }}
+            protocol: TCP
+    {{- if .Values.persistence.enabled }}
+      volumes:
+        {{- with .Values.persistence.volumes }}
+        {{- . | toYaml | trim | nindent 6 }}
+        {{- end }}
+    {{- end }}

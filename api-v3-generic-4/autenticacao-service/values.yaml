@@ -1,0 +1,122 @@
+#replicaCount: 2
+
+applicationName: web-autenticacao
+namespace: cardsapi-generic-4
+
+nodeSelector:
+  environment: cardsapi-generics
+
+initContainers:
+  enabled: true
+  config:
+  - name: wait-for-other-pod
+    image: curlimages/curl
+    args:
+    - /bin/sh
+    - -c
+    - >
+      set -x;
+      while [ $(curl -sw '%{http_code}' "web-configuration:8888/actuator/health" -o /dev/null) -ne 200 ]; do
+        sleep 10;
+      done
+
+image:
+  repository: 261177153744.dkr.ecr.us-east-1.amazonaws.com/arquitetura/autenticacao-service
+  pullPolicy: IfNotPresent
+  tag: "TESTE-a5efa001-1.0.3-a5efa001"
+
+resources:
+  limits:
+    cpu: '1'
+    memory: 768Mi
+  requests:
+    cpu: 200m
+    memory: 300Mi
+
+service:
+  type: ClusterIP
+  port: 8800
+
+healthCheck:
+  readiness:
+    enabled: true
+    initialDelaySeconds: 70
+    timeoutSeconds: 5
+    periodSeconds: 5
+    httpGet:
+      enabled: true
+      path: /autenticacao/actuator/health
+    tcpSocket:
+      enabled: false 
+  liveness:
+    enabled: false
+    initialDelaySeconds: 150
+    timeoutSeconds: 5
+    periodSeconds: 5   
+    httpGet:
+      enabled: false
+      path: /actuator/health   
+    tcpSocket:
+      enabled: false
+
+persistence:
+  enabled: false
+  mounts: 
+    - mountPath: /var
+      name: mount1
+   
+  volumes: 
+    - name: mount1    
+      nfs:
+        server: dns.com
+        path: /example
+
+
+configmaps:
+  enabled: true
+  envs:
+    SPRING_APPLICATION_NAME: cards-autenticacao-service
+    SPRING_CLOUD_CONFIG_LABEL: teste-unificacao
+    SPRING_PROFILES_ACTIVE: teste
+    CONTEXT_PATH: /autenticacao
+    RMQ_HOST: rabbitmq
+    RMQ_PORT: '5672'
+    http_proxy: "http://10.232.77.168:3128/"
+    ftp_proxy : "ftp://10.232.77.168:3128/"
+    rsync_proxy: "rsync://10.232.77.168:3128/"
+    no_proxy: "localhost,127.0.0.1,192.168.1.1,::1,*.local"
+    HTTP_PROXY: "http://10.232.77.168:3128/"
+    FTP_PROXY: "ftp://10.232.77.168:3128/"
+    RSYNC_PROXY: "rsync://10.232.77.168:3128/"
+    NO_PROXY: "localhost,127.0.0.1,192.168.1.1,::1,*.local"
+    https_proxy: "http://10.232.77.168:3128/"
+    HTTPS_PROXY: "http://10.232.77.168:3128/"
+
+ingress:
+  enabled: true
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:138511992678:certificate/14f241ee-6dc9-4a70-860e-d1e891f63ab6,arn:aws:acm:us-east-1:138511992678:certificate/908ad1e4-db79-42cf-ab77-c22938424eea
+    alb.ingress.kubernetes.io/group.name: lab-rpe-int
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/target-type: ip
+    kubernetes.io/ingress.class: alb
+  host: cards-api-v3-generic-4.testing.prc.rpe.tech
+  path: /autenticacao
+  pathtype: Prefix
+
+hpa:
+  enabled: false
+  scaling:
+    minReplicas: 4
+    maxReplicas: 6  
+  cpu:
+    enabled: false
+    averageUtilization: 80
+  memory:
+    enabled: false
+    averageUtilization: 80
+
+

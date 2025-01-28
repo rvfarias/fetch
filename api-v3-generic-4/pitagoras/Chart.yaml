@@ -1,0 +1,13 @@
+
+
+apiVersion: v2
+
+# Substituia teste pelo nome do emissor
+name: web-pitagoras
+description: A Helm chart for pitagoras
+
+type: application
+version: v1.0
+appVersion: v1.0
+
+

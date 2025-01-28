@@ -1,0 +1,91 @@
+# Default values for acheron-qa-1.
+replicaCount: 1
+
+applicationName: rabbitmq
+namespace: cardsapi-generic-4
+
+nodeSelector:
+  environment: cardsapi-generics
+
+image:
+  repository: rabbitmq
+  pullPolicy: IfNotPresent
+  tag: "3-management"
+
+resources:
+  limits:
+    cpu: 150m
+    memory: 400Mi
+  requests:
+    cpu: 15m
+    memory: 100Mi
+
+service:
+  type: ClusterIP
+  port: 5672
+  port2: 15672
+
+healthCheck:
+  readiness:
+    enabled: false
+    initialDelaySeconds: 10
+    timeoutSeconds: 5
+    periodSeconds: 5
+    httpGet:
+      enabled: false
+      path: /actuator/health 
+    tcpSocket:
+      enabled: false 
+  liveness:
+    enabled: false
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 5   
+    httpGet:
+      enabled: false
+      path: /actuator/health   
+    tcpSocket:
+      enabled: false
+
+persistence:
+  enabled: true
+  mounts: 
+    - name: data
+      mountPath: /var/lib/rabbitmq/mnesia/
+   
+  volumes: 
+    - name: data
+      nfs:
+        server: 10.232.64.34
+        path: /rabbitmqs/generic-4
+
+configmaps:
+  enabled: false
+  envs:
+    RABBITMQ_DEFAULT_PASS: cardsapi
+    RABBITMQ_DEFAULT_USER: cardsapi
+
+ingress:
+  enabled: false
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:138511992678:certificate/14f241ee-6dc9-4a70-860e-d1e891f63ab6,arn:aws:acm:us-east-1:138511992678:certificate/908ad1e4-db79-42cf-ab77-c22938424eea
+    alb.ingress.kubernetes.io/group.name: lab-rpe-ext
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/target-type: ip
+    kubernetes.io/ingress.class: alb
+  host: anubis-api.staging.prc.rpe.tech
+
+hpa:
+  enabled: false
+  scaling:
+    minReplicas: 1
+    maxReplicas: 3  
+  cpu:
+    enabled: false
+    averageUtilization: 80
+  memory:
+    enabled: false
+    averageUtilization: 80

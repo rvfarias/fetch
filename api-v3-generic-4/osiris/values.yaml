@@ -1,0 +1,136 @@
+#replicaCount: 
+
+applicationName: web-osiris
+namespace: cardsapi-generic-4
+
+nodeSelector:
+  environment: cardsapi-generics
+
+initContainers:
+  enabled: true
+  config:
+  - name: wait-for-other-pod
+    image: curlimages/curl
+    args:
+    - /bin/sh
+    - -c
+    - >
+      set -x;
+      while [ $(curl -sw '%{http_code}' "web-configuration:8888/actuator/health" -o /dev/null) -ne 200 ]; do
+        sleep 10;
+      done
+
+image:
+  repository:  261177153744.dkr.ecr.us-east-1.amazonaws.com/bandeira/osiris
+  pullPolicy: IfNotPresent
+  tag: "QA-4-1.7.1-5b5c4610"
+
+resources:
+  limits:
+    cpu: '1'
+    memory: 768Mi
+  requests:
+    cpu: 300m
+    memory: 350Mi
+
+service:
+  type: ClusterIP
+  port: 8085
+
+healthCheck:
+  readiness:
+    enabled: true
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 5
+    httpGet:
+      enabled: true
+      path: /actuator/health 
+    tcpSocket:
+      enabled: false 
+  liveness:
+    enabled: false
+    initialDelaySeconds: 150
+    timeoutSeconds: 5
+    periodSeconds: 5   
+    httpGet:
+      enabled: false
+      path: /actuator/health   
+    tcpSocket:
+      enabled: false
+
+persistence:
+  enabled: true
+  mounts: 
+    - name: chaves
+      mountPath: /usr/local/Chaves
+    - name: gtkpdf
+      mountPath: /usr/lib/gtkpdf-1.2
+    - name: certificados
+      mountPath: /usr/local/certificados
+   
+  volumes: 
+    - name: chaves
+      nfs:
+        server: 10.232.64.34
+        path: /Chaves
+    - name: certificados
+      nfs:
+        server: 10.232.64.34
+        path: /certificados
+    - name: gtkpdf
+      nfs:
+        server: 10.232.64.34
+        path: /gtkpdf-1.2
+
+
+
+configmaps:
+  enabled: true
+  envs:
+    DB_PASS: tosiris_usr.mktpay
+    DB_URL: jdbc:postgresql://db-postgres-teste.cafvi18jxqcm.us-east-1.rds.amazonaws.com:5432/tosiris
+    DB_USER: tosiris_usr    
+    SMS_ATIVO: 'true'
+    SPRING_APPLICATION_NAME: cards-osiris-service
+    SPRING_CLOUD_CONFIG_LABEL: teste-unificacao
+    SPRING_PROFILES_ACTIVE: teste
+    # CONTEXT_PATH: /
+    AMQP_HOST: rabbitmq
+    http_proxy: "http://10.232.77.168:3128/"
+    ftp_proxy : "ftp://10.232.77.168:3128/"
+    rsync_proxy: "rsync://10.232.77.168:3128/"
+    no_proxy: "localhost,127.0.0.1,192.168.1.1,::1,*.local"
+    HTTP_PROXY: "http://10.232.77.168:3128/"
+    FTP_PROXY: "ftp://10.232.77.168:3128/"
+    RSYNC_PROXY: "rsync://10.232.77.168:3128/"
+    NO_PROXY: "localhost,127.0.0.1,192.168.1.1,::1,*.local"
+    https_proxy: "http://10.232.77.168:3128/"
+    HTTPS_PROXY: "http://10.232.77.168:3128/"
+
+ingress:
+  enabled: true
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:138511992678:certificate/908ad1e4-db79-42cf-ab77-c22938424eea
+    alb.ingress.kubernetes.io/group.name: lab-rpe-int
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-Res-2020-10
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/target-type: ip
+    kubernetes.io/ingress.class: alb
+  host: osiris-generic-4.testing.prc.rpe.tech
+  path: /
+  pathtype: Prefix
+
+hpa:
+  enabled: false
+  scaling:
+    minReplicas: 4
+    maxReplicas: 8  
+  cpu:
+    enabled: false
+    averageUtilization: 80
+  memory:
+    enabled: false
+    averageUtilization: 80

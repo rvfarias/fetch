@@ -1,0 +1,9 @@
+apiVersion: v2
+
+# Substituia teste pelo nome do emissor
+name: web-autenticacao-genericaut-hml
+description: A Helm chart for Web autenticacao generic 4
+
+type: application
+version: v1.0
+appVersion: v1.0
