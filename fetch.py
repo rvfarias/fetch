@@ -32,15 +32,27 @@ for arquivo in arquivos:
             for linha in linhas:
                 #Entao pega o nome do server em questao e salva  
                 if 'replica' in linha:
-                    if len(linha) == 16:
-                        str = linha[:14] + "0"
+                    indice = linha.find('#')
+                    if indice > -1:
+                        indice = linha.find(':')
+                        str = linha[1:indice] + " 0"
+                        print(str)
+                        linha = str 
+                    else:
+                        indice = linha.find(':')
+                        str = linha[0:indice] + " 0"
                         print(str)
                         linha = str
+
+                    # if len(linha) == 16:
+                    #     str = linha[:14] + "0"
+                    #     print(str)
+                    #     linha = str
                     
-                    elif len(linha) > 16:
-                        str = linha[1:15] + "0"
-                        str[15] = "0"
-                        linha = str
+                    # elif len(linha) > 16:
+                    #     str = linha[1:15] + "0"
+                    #     str[15] = "0"
+                    #     linha = str
                     linhas[i] = linha
                     i = i + 1               
                 else:
