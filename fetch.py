@@ -47,7 +47,7 @@ for arquivo in arquivos:
                     i = i + 1
                     continue
         
-        with open("values.yaml", "w") as f:
+        with open("/home/rafael-farias/Documentos/fetch/api-v2/values.yaml", "w") as f:
             f.writelines(linhas)
             
     else:
