@@ -5,7 +5,7 @@ from pathlib import Path
 # list_arq = []
 
 # Defina o caminho para a pasta onde os arquivos estão localizados
-pasta = Path("/home/rafael-farias/Documentos/fetch")
+pasta = Path("/home/rafael-farias/Documentos/fetch/linkpagamento")
 
 # # Define o caminho da pasta raiz
 # pasta_raiz = Path("/caminho/para/pasta")
@@ -21,7 +21,7 @@ for arquivo in pasta.rglob("*.yaml"):
         #Entao pega o nome do server em questao e salva  
             if 'server' in linha:
                 indice = linha.find(':')
-                str = linha[0:indice+1]
+                str = linha[0:indice+1] + "\n"
                 print(linha)
                 linha = str
                 linhas[i] = linha
