@@ -5,30 +5,30 @@ from pathlib import Path
 # list_arq = []
 
 # Defina o caminho para a pasta onde os arquivos estão localizados
-pasta = Path("/home/rafael-farias/Documentos/fetch")
+pasta = Path("/home/rafael-farias/Documentos/fetch/hpy-test")
 
 # # Define o caminho da pasta raiz
 # pasta_raiz = Path("/caminho/para/pasta")
 
 # Itera sobre todos os arquivos (inclusive nas subpastas)
 # Filtra apenas arquivos .txt
-for arquivo in pasta.rglob("*values.yaml"):
+for arquivo in pasta.rglob("*serviceaccount.yaml"):
     caminho = arquivo
     with arquivo.open("r") as f:
         linhas = f.readlines()
         i = 0
         for linha in linhas:
         #Entao pega o nome do server em questao e salva  
-            if 'replica' in linha:
+            if 'eks' in linha:
                 indice = linha.find('#')
                 if indice > -1:
                     indice = linha.find(':')
-                    str = linha[1:indice+1] + " 0"
+                    str = linha[1:indice+1] + " arn:aws:iam::491532727257:role/role-auth-eks-sa-qa-horizon"
                     print(linha)
                     linha = str 
                 else:
                     indice = linha.find(':')
-                    str = linha[0:indice+1] + " 0"
+                    str = linha[0:indice+1] + " arn:aws:iam::491532727257:role/role-auth-eks-sa-qa-horizon"
                     print(linha)
                     linha = str
 
